@@ -6,7 +6,7 @@ import { Zap } from "lucide-react";
 
 const Navbar = () => {
   const { user, logOut } = useAuth();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
   useEffect(() => {
     document.querySelector("html")?.setAttribute("data-theme", theme);
@@ -14,7 +14,7 @@ const Navbar = () => {
   }, [theme]);
 
   const toggleTheme = () =>
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   const handleLogOut = () => {
     logOut()
