@@ -7,7 +7,6 @@ import useAxiosSecure from "../hooks/useAxiosSecure";
 import { Home } from "lucide-react";
 import Loading from "../components/Loading/Loading";
 
-
 const Dashboard = () => {
   const { user, logOut, loading: authLoading } = useAuth(); // ← Only 'user'
   const axiosSecure = useAxiosSecure();
@@ -73,11 +72,16 @@ const Dashboard = () => {
   const links = getLinks();
 
   const handleLogout = async () => {
+  try {
     await logOut();
-    navigate("/login");
-  };
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    // Force redirect to home, no matter what
+    window.location.href = "/";
+  }
+};
 
-  
   const displayName = user?.displayName || user?.email?.split("@")[0] || "User";
   const photoURL = user?.photoURL || "https://i.ibb.co.com/4p5dQ5X/user.png";
 
@@ -86,7 +90,6 @@ const Dashboard = () => {
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
 
       <div className="drawer-content flex flex-col">
-        
         <div className="navbar bg-base-100 shadow-md px-6">
           <div className="flex-1">
             <div className="flex items-center gap-4">
@@ -108,7 +111,9 @@ const Dashboard = () => {
                   />
                 </svg>
               </label>
-              <h1 className="text-2xl font-bold capitalize">{userRole} Dashboard</h1>
+              <h1 className="text-2xl font-bold capitalize">
+                {userRole} Dashboard
+              </h1>
             </div>
           </div>
 
@@ -119,7 +124,9 @@ const Dashboard = () => {
 
             <div className="text-right hidden sm:block">
               <p className="font-semibold">{displayName}</p>
-              <p className="text-sm text-base-content/70 capitalize">{userRole}</p>
+              <p className="text-sm text-base-content/70 capitalize">
+                {userRole}
+              </p>
             </div>
 
             <div className="avatar online">

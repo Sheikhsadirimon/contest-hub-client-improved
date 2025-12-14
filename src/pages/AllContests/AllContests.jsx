@@ -109,7 +109,7 @@ const AllContests = () => {
                     className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute top-4 right-4 badge badge-primary font-bold text-lg py-3 px-4">
-                    {contest.prize}
+                    ${contest.prize}
                   </div>
                 </figure>
 
