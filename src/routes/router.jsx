@@ -8,23 +8,26 @@ import Register from "../pages/auth/Register";
 import AllContests from "../pages/AllContests/AllContests";
 import PrivateRoute from "../provider/PrivateRoute";
 import Dashboard from "../layouts/Dashboard";
+import ManageUsers from "../pages/Dashboard/AdminDashboard/ManageUsers";
+import ManageContests from "../pages/Dashboard/AdminDashboard/ManageContests";
+import AddContest from "../pages/Dashboard/CreatorDashboard/AddContest";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element:<RootLayout></RootLayout>,
+    element: <RootLayout></RootLayout>,
     children: [
       {
         index: true,
         path: "/",
-        element:<Home></Home>,
+        element: <Home></Home>,
       },
       {
         path: "*",
         element: <ErrorPage></ErrorPage>,
       },
       {
-        path:'/all-contests',
+        path: "/all-contests",
         element: <AllContests></AllContests>,
       },
       {
@@ -44,12 +47,25 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: '/dashboard',
-    element: <PrivateRoute><Dashboard></Dashboard></PrivateRoute>,
-    children:[
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <Dashboard></Dashboard>
+      </PrivateRoute>
+    ),
+    children: [
       {
-
-      }
-    ]
-  }
+        path: "/dashboard/manage-users",
+        element: <ManageUsers></ManageUsers>,
+      },
+      {
+        path: "/dashboard/manage-contests",
+        element: <ManageContests></ManageContests>,
+      },
+      {
+        path: "/dashboard/add-contest",
+        element: <AddContest></AddContest>,
+      },
+    ],
+  },
 ]);

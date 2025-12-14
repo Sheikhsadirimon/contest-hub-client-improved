@@ -77,7 +77,7 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  // Safe display values
+  
   const displayName = user?.displayName || user?.email?.split("@")[0] || "User";
   const photoURL = user?.photoURL || "https://i.ibb.co.com/4p5dQ5X/user.png";
 
@@ -86,7 +86,7 @@ const Dashboard = () => {
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
 
       <div className="drawer-content flex flex-col">
-        {/* Top Navbar */}
+        
         <div className="navbar bg-base-100 shadow-md px-6">
           <div className="flex-1">
             <div className="flex items-center gap-4">
@@ -113,7 +113,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link to="/" className="btn btn-ghost btn-circle tooltip" data-tip="Home">
+            <Link to="/" className="btn btn-ghost btn-circle">
               <Home className="w-5 h-5" />
             </Link>
 

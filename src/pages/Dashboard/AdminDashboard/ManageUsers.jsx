@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const ManageUsers = () => {
   const axiosSecure = useAxiosSecure();
@@ -21,16 +21,55 @@ const ManageUsers = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["adminUsers"]);
-      Swal.fire("Updated!", "User role changed successfully.", "success");
+      Swal.fire({
+        icon: "success",
+        title: "Role Updated!",
+        text: "User role has been changed successfully.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    },
+    onError: () => {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong while updating the role.",
+      });
     },
   });
 
-  const handleRoleChange = (id, role) => {
-    mutation.mutate({ id, role });
+  const handleRoleChange = (id, newRole, currentRole, userName) => {
+    // Prevent demoting the last/current admin
+    if (currentRole === "admin" && newRole !== "admin") {
+      Swal.fire({
+        icon: "warning",
+        title: "Cannot Change Admin Role",
+        text: "You cannot demote an admin user. There must be at least one admin.",
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: `Change ${userName || "this user"}'s role to "${newRole}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, change it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mutation.mutate({ id, role: newRole });
+      }
+    });
   };
 
   if (isLoading) {
-    return <div className="flex justify-center py-20"><span className="loading loading-spinner loading-lg"></span></div>;
+    return (
+      <div className="flex justify-center py-20">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
   }
 
   return (
@@ -55,18 +94,41 @@ const ManageUsers = () => {
                   <td>{user.displayName || "N/A"}</td>
                   <td>{user.email}</td>
                   <td>
-                    <div className="badge badge-primary">{user.role}</div>
+                    <div
+                      className={`badge ${
+                        user.role === "admin"
+                          ? "badge-error"
+                          : user.role === "creator"
+                          ? "badge-warning"
+                          : "badge-success"
+                      }`}
+                    >
+                      {user.role}
+                    </div>
                   </td>
                   <td>
-                    <select
-                      defaultValue={user.role}
-                      onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                      className="select select-bordered select-sm"
-                    >
-                      <option value="user">User</option>
-                      <option value="creator">Creator</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                    {user.role === "admin" ? (
+                      <span className="text-sm text-base-content/60 italic">
+                        Admin (cannot change)
+                      </span>
+                    ) : (
+                      <select
+                        defaultValue={user.role}
+                        onChange={(e) =>
+                          handleRoleChange(
+                            user._id,
+                            e.target.value,
+                            user.role,
+                            user.displayName || user.email
+                          )
+                        }
+                        className="select select-bordered select-sm"
+                      >
+                        <option value="user">User</option>
+                        <option value="creator">Creator</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    )}
                   </td>
                 </tr>
               ))}
