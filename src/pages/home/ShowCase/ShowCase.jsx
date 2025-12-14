@@ -2,8 +2,10 @@ import React, { useEffect } from "react";
 import { Link } from "react-router";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import useAuth from "../../../hooks/useAuth";
 
 const Showcase = () => {
+  const { user } = useAuth();
   useEffect(() => {
     AOS.init({
       duration: 1200,
@@ -41,12 +43,14 @@ const Showcase = () => {
           data-aos-delay="800"
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
         >
-          <Link
-            to="/auth/signup"
-            className="btn btn-lg rounded-full px-10 bg-black text-white hover:bg-gray-800 font-bold shadow-xl hover:shadow-2xl transition-all"
-          >
-            Get Started
-          </Link>
+          {!user && (
+            <Link
+              to="/auth/signup"
+              className="btn btn-lg rounded-full px-10 bg-black text-white hover:bg-gray-800 font-bold shadow-xl hover:shadow-2xl transition-all"
+            >
+              Get Started
+            </Link>
+          )}
 
           <Link
             to="/all-contests"

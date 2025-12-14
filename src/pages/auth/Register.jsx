@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
+import useAxios from "../../hooks/useAxios"; // Your plain axios hook
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -20,7 +21,8 @@ const registerSchema = z.object({
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { createUser, updateUser, setUser, signInWithGoogle } = useAuth();
+  const { createUser, updateUser, signInWithGoogle } = useAuth(); // ← updateUser is correct
+  const axiosInstance = useAxios(); // Plain axios for registration
   const navigate = useNavigate();
 
   const {
@@ -33,26 +35,48 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
+      // 1. Create user in Firebase
       const res = await createUser(data.email, data.password);
-      const user = res.user;
+      const firebaseUser = res.user;
 
+      // 2. Update Firebase profile using the correct function
       await updateUser({
         displayName: data.name,
         photoURL: data.photo,
       });
 
-      setUser({ ...user, displayName: data.name, photoURL: data.photo });
+      // 3. Save user to MongoDB with role "user"
+      await axiosInstance.post("/users", {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: data.name,
+        photoURL: data.photo,
+      });
+
+      toast.success("Registration successful!");
       navigate("/");
     } catch (error) {
+      console.error("Registration error:", error);
       toast.error(error.code || "Registration failed");
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithGoogle();
+      const res = await signInWithGoogle();
+      const firebaseUser = res.user;
+
+      await axiosInstance.post("/users", {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName || "",
+        photoURL: firebaseUser.photoURL || "",
+      });
+
+      toast.success("Signed up with Google!");
       navigate("/");
     } catch (error) {
+      console.error(error);
       toast.error(error.code || "Google signup failed");
     }
   };
@@ -63,6 +87,7 @@ const Register = () => {
         <h2 className="font-bold text-2xl text-center mb-6">Signup Your Account</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="card-body pt-0">
+          {/* Name */}
           <div className="form-control">
             <label className="label">
               <span className="label-text font-medium">Name</span>
@@ -80,6 +105,7 @@ const Register = () => {
             )}
           </div>
 
+          {/* Email */}
           <div className="form-control">
             <label className="label">
               <span className="label-text font-medium">Email</span>
@@ -97,6 +123,7 @@ const Register = () => {
             )}
           </div>
 
+          {/* Photo URL */}
           <div className="form-control">
             <label className="label">
               <span className="label-text font-medium">Photo URL</span>
@@ -114,6 +141,7 @@ const Register = () => {
             )}
           </div>
 
+          {/* Password */}
           <div className="form-control relative">
             <label className="label">
               <span className="label-text font-medium">Password</span>
@@ -160,22 +188,10 @@ const Register = () => {
               viewBox="0 0 512 512"
               className="mr-3"
             >
-              <path
-                fill="#34a853"
-                d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"
-              />
-              <path
-                fill="#4285f4"
-                d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"
-              />
-              <path
-                fill="#fbbc02"
-                d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"
-              />
-              <path
-                fill="#ea4335"
-                d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"
-              />
+              <path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341" />
+              <path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57" />
+              <path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73" />
+              <path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55" />
             </svg>
             Continue with Google
           </button>

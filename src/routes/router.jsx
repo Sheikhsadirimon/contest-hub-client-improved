@@ -6,6 +6,8 @@ import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import AllContests from "../pages/AllContests/AllContests";
+import PrivateRoute from "../provider/PrivateRoute";
+import Dashboard from "../layouts/Dashboard";
 
 export const router = createBrowserRouter([
   {
@@ -41,4 +43,13 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/dashboard',
+    element: <PrivateRoute><Dashboard></Dashboard></PrivateRoute>,
+    children:[
+      {
+
+      }
+    ]
+  }
 ]);
