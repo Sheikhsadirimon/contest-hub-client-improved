@@ -6,6 +6,7 @@ import * as z from "zod";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
+import useAxios from "../../hooks/useAxios";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -16,6 +17,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, signInWithGoogle } = useAuth();
   const location = useLocation();
+  const axiosInstance= useAxios()
   const navigate = useNavigate();
 
   const {
@@ -36,13 +38,24 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      await signInWithGoogle();
-      navigate(location.state ? location.state : "/");
-    } catch (error) {
-      toast.error(error.code || "Google login failed");
-    }
-  };
+      try {
+        const res = await signInWithGoogle();
+        const firebaseUser = res.user;
+  
+        await axiosInstance.post("/users", {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || "",
+          photoURL: firebaseUser.photoURL || "",
+        });
+  
+        toast.success("Signed up with Google!");
+        navigate("/");
+      } catch (error) {
+        console.error(error);
+       
+      }
+    };
 
   return (
     <div className="flex justify-center min-h-screen items-center px-4">

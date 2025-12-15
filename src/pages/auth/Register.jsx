@@ -77,7 +77,6 @@ const Register = () => {
       navigate("/");
     } catch (error) {
       console.error(error);
-      toast.error(error.code || "Google signup failed");
     }
   };
 
