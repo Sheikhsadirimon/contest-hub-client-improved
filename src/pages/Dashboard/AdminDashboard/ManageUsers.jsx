@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
@@ -6,6 +6,9 @@ import useAxiosSecure from "../../../hooks/useAxiosSecure";
 const ManageUsers = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["adminUsers"],
@@ -38,14 +41,18 @@ const ManageUsers = () => {
     },
   });
 
-  const handleRoleChange = (id, newRole, currentRole, userName) => {
-    // Prevent demoting the last/current admin
+  const handleRoleChange = (e, userId, currentRole, userName) => {
+    const newRole = e.target.value;
+
+    if (currentRole === newRole) return;
+
     if (currentRole === "admin" && newRole !== "admin") {
       Swal.fire({
         icon: "warning",
         title: "Cannot Change Admin Role",
         text: "You cannot demote an admin user. There must be at least one admin.",
       });
+      e.target.value = currentRole;
       return;
     }
 
@@ -59,9 +66,21 @@ const ManageUsers = () => {
       confirmButtonText: "Yes, change it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        mutation.mutate({ id, role: newRole });
+        mutation.mutate({ id: userId, role: newRole });
+      } else {
+        e.target.value = currentRole;
       }
     });
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = users.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   if (isLoading) {
@@ -76,6 +95,15 @@ const ManageUsers = () => {
     <div className="card bg-base-100 shadow-xl">
       <div className="card-body">
         <h2 className="card-title text-3xl mb-6">Manage Users</h2>
+
+        {/* Total Users Info */}
+        <div className="mb-4 text-right">
+          <span className="text-sm text-base-content/70">
+            Total Users: {users.length} | Page {currentPage} of{" "}
+            {totalPages || 1}
+          </span>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="table table-zebra w-full">
             <thead>
@@ -88,9 +116,9 @@ const ManageUsers = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user, index) => (
+              {currentUsers.map((user, index) => (
                 <tr key={user._id}>
-                  <th>{index + 1}</th>
+                  <th>{startIndex + index + 1}</th>
                   <td>{user.displayName || "N/A"}</td>
                   <td>{user.email}</td>
                   <td>
@@ -116,8 +144,8 @@ const ManageUsers = () => {
                         defaultValue={user.role}
                         onChange={(e) =>
                           handleRoleChange(
+                            e,
                             user._id,
-                            e.target.value,
                             user.role,
                             user.displayName || user.email
                           )
@@ -135,6 +163,39 @@ const ManageUsers = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="btn btn-sm btn-outline"
+            >
+              Previous
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => handlePageChange(i + 1)}
+                className={`btn btn-sm ${
+                  currentPage === i + 1 ? "btn-primary" : "btn-outline"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="btn btn-sm btn-outline"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

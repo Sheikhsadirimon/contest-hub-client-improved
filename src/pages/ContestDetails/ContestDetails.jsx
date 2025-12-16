@@ -37,7 +37,6 @@ const ContestDetails = () => {
     enabled: !!user?.uid,
   });
 
-  // Check if user has paid for this contest
   const {
     data: paymentStatus,
     isLoading: paymentLoading,
@@ -55,18 +54,17 @@ const ContestDetails = () => {
   const userRole = userData?.role || "user";
   const isRegularUser = userRole === "user";
   const isEnded = contest?.deadline && new Date(contest.deadline) < new Date();
+  const hasWinner = !!contest?.winner;
 
   const participantCount = contest?.participants || 0;
 
-  // Handle payment success — update everything immediately
+  // Handle payment success
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     if (query.get("payment") === "success") {
-      // Save payment and increase count
       axiosSecure
         .post("/save-payment", { contestId: id })
         .then(() => {
-          // Refetch both contest and payment status
           refetchContest();
           refetchPayment();
         })
@@ -82,7 +80,6 @@ const ContestDetails = () => {
         showConfirmButton: false,
       });
 
-      // Clean URL
       window.history.replaceState({}, "", `/contest/${id}`);
     }
   }, [id, axiosSecure, refetchContest, refetchPayment]);
@@ -125,7 +122,9 @@ const ContestDetails = () => {
   const renderer = ({ days, hours, minutes, seconds, completed }) => {
     if (completed) {
       return (
-        <span className="text-4xl font-bold text-error">Contest Ended</span>
+        <span className="text-4xl mx-auto font-bold text-error">
+          Contest Ended
+        </span>
       );
     }
 
@@ -188,7 +187,7 @@ const ContestDetails = () => {
               <div>
                 <p className="text-lg text-base-content/70">Prize Money</p>
                 <p className="text-5xl font-bold text-primary mt-2">
-                  {contest.prize}
+                  ${contest.prize}
                 </p>
               </div>
               <div>
@@ -224,28 +223,41 @@ const ContestDetails = () => {
             </div>
 
             {/* Winner */}
-            {contest.winner && (
+            {hasWinner && (
               <div className="bg-success/10 rounded-2xl p-10 text-center my-12">
                 <h3 className="text-4xl font-bold text-success mb-8">
                   Winner Announced!
                 </h3>
                 <div className="avatar">
                   <div className="w-40 rounded-full ring ring-success ring-offset-base-100 ring-offset-4">
+                    {/* Now shows winner's photoURL from submission */}
                     <img
-                      src={contest.winner.photoURL}
+                      src={
+                        contest.winner.photoURL ||
+                        "https://i.ibb.co.com/4pB0Z4J/user.png"
+                      }
                       alt={contest.winner.name}
                     />
                   </div>
                 </div>
                 <p className="text-3xl font-bold mt-6">{contest.winner.name}</p>
-                <p className="text-xl mt-2">Won {contest.prize}!</p>
+                <p className="text-xl mt-2">Won ${contest.prize}!</p>
               </div>
             )}
 
             {/* Action Buttons */}
             <div className="flex flex-col md:flex-row justify-center gap-8 mt-12">
-              {/* Register & Pay - only if not paid */}
-              {isRegularUser && !isEnded && !paymentStatus && (
+              {/* Only normal users can participate */}
+              {!isRegularUser && !isEnded && !hasWinner && (
+                <div className="alert alert-info shadow-lg max-w-md">
+                  <span className="text-lg font-medium">
+                    Only normal users can participate.
+                  </span>
+                </div>
+              )}
+
+              {/* Register & Pay - only for normal users, not ended, not paid, no winner */}
+              {isRegularUser && !isEnded && !paymentStatus && !hasWinner && (
                 <button
                   onClick={handlePayment}
                   className="btn btn-primary btn-lg text-xl px-16"
@@ -254,8 +266,8 @@ const ContestDetails = () => {
                 </button>
               )}
 
-              {/* Submit Task - only if paid */}
-              {isRegularUser && !isEnded && paymentStatus && (
+              {/* Submit Task - only for normal users, not ended, paid, no winner */}
+              {isRegularUser && !isEnded && paymentStatus && !hasWinner && (
                 <button
                   onClick={() => setShowSubmitModal(true)}
                   className="btn btn-success btn-lg text-xl px-16"
@@ -264,11 +276,13 @@ const ContestDetails = () => {
                 </button>
               )}
 
-              {/* Contest ended */}
-              {isEnded && (
-                <div className="alert alert-warning shadow-lg max-w-md">
+              {/* Contest ended or winner declared */}
+              {(isEnded || hasWinner) && (
+                <div className="alert alert-info shadow-lg max-w-md">
                   <span className="text-xl font-semibold">
-                    Contest has ended
+                    {hasWinner
+                      ? "Winner has been declared!"
+                      : "Contest has ended"}
                   </span>
                 </div>
               )}
