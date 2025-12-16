@@ -49,7 +49,23 @@ const SubmittedTasks = () => {
         },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Optimistic update: instantly show winner in UI
+      queryClient.setQueryData(["creatorContests"], (old) =>
+        old.map((c) =>
+          c._id === variables.contestId
+            ? {
+                ...c,
+                winner: {
+                  uid: variables.winnerUid,
+                  name: variables.winnerName,
+                  photoURL: variables.winnerPhotoURL,
+                },
+              }
+            : c
+        )
+      );
+
       queryClient.invalidateQueries(["creatorContests"]);
       queryClient.invalidateQueries(["creatorSubmissions"]);
       Swal.fire(
@@ -59,6 +75,9 @@ const SubmittedTasks = () => {
       );
       setSelectedSubmission(null);
     },
+    onError: () => {
+      Swal.fire("Error", "Failed to declare winner", "error");
+    },
   });
 
   const handleDeclareWinner = (submission) => {
@@ -66,7 +85,7 @@ const SubmittedTasks = () => {
     if (contest.winner) {
       Swal.fire(
         "Already Declared",
-        "A winner has already been declared for this contest.",
+        "A winner has already been declared.",
         "info"
       );
       return;
@@ -84,7 +103,8 @@ const SubmittedTasks = () => {
           contestId: submission.contestId,
           winnerUid: submission.userUid,
           winnerName: submission.userName,
-          winnerPhotoURL: user.photoURL || "",
+          winnerPhotoURL:
+            submission.userPhotoURL || "https://i.ibb.co/4pB0Z4J/user.png",
         });
       }
     });

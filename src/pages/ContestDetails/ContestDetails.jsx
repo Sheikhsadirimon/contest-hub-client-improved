@@ -107,6 +107,7 @@ const ContestDetails = () => {
         userUid: user.uid,
         userEmail: user.email,
         userName: user.displayName,
+        userPhotoURL: user.photoURL || "",
         task: taskSubmission,
         submittedAt: new Date().toISOString(),
       });

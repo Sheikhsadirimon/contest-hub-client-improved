@@ -148,7 +148,7 @@ const MyContests = () => {
                     <td>{contest.participants || 0}</td>
                     <td className="flex flex-wrap gap-2">
                       <Link
-                        to={`/dashboard/submissions/${contest._id}`}
+                        to={`/dashboard/submissions`}
                         className="btn btn-info btn-sm"
                       >
                         See Submissions
