@@ -20,7 +20,7 @@ const SubmittedTasks = () => {
     },
   });
 
-  // Fetch all submissions for creator's contests
+  // Fetch all submissions
   const { data: submissions = [], isLoading: submissionsLoading } = useQuery({
     queryKey: ["creatorSubmissions", contests],
     queryFn: async () => {
@@ -41,18 +41,23 @@ const SubmittedTasks = () => {
       winnerName,
       winnerPhotoURL,
     }) => {
-      await axiosSecure.patch(`/contests/${contestId}/winner`, {
+      const res = await axiosSecure.patch(`/contests/${contestId}/winner`, {
         winner: {
           uid: winnerUid,
           name: winnerName,
           photoURL: winnerPhotoURL,
         },
       });
+      return res.data; // Make sure backend returns { success: true }
     },
-    onSuccess: (_, variables) => {
-      // Optimistic update: instantly show winner in UI
+    onMutate: async (variables) => {
+      // Optimistic update
+      await queryClient.cancelQueries(["creatorContests"]);
+
+      const previousContests = queryClient.getQueryData(["creatorContests"]);
+
       queryClient.setQueryData(["creatorContests"], (old) =>
-        old.map((c) =>
+        old?.map((c) =>
           c._id === variables.contestId
             ? {
                 ...c,
@@ -66,26 +71,34 @@ const SubmittedTasks = () => {
         )
       );
 
+      return { previousContests };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      queryClient.setQueryData(["creatorContests"], context.previousContests);
+      Swal.fire(
+        "Error",
+        "Failed to declare winner. Please try again.",
+        "error"
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries(["creatorContests"]);
       queryClient.invalidateQueries(["creatorSubmissions"]);
-      Swal.fire(
-        "Winner Declared!",
-        "The winner has been announced.",
-        "success"
-      );
-      setSelectedSubmission(null);
     },
-    onError: () => {
-      Swal.fire("Error", "Failed to declare winner", "error");
+    onSuccess: () => {
+      Swal.fire("Success!", "Winner declared successfully!", "success");
+      setSelectedSubmission(null);
     },
   });
 
   const handleDeclareWinner = (submission) => {
     const contest = contests.find((c) => c._id === submission.contestId);
-    if (contest.winner) {
+
+    if (contest?.winner) {
       Swal.fire(
         "Already Declared",
-        "A winner has already been declared.",
+        "A winner has already been declared for this contest.",
         "info"
       );
       return;
@@ -93,16 +106,20 @@ const SubmittedTasks = () => {
 
     Swal.fire({
       title: "Declare Winner?",
-      text: `Declare ${submission.userName} as winner of "${contest.name}"?`,
+      text: `Declare ${
+        submission.userName || submission.userEmail
+      } as winner of "${contest?.name}"?`,
       icon: "question",
       showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
       confirmButtonText: "Yes, declare winner!",
     }).then((result) => {
       if (result.isConfirmed) {
         declareWinnerMutation.mutate({
           contestId: submission.contestId,
           winnerUid: submission.userUid,
-          winnerName: submission.userName,
+          winnerName: submission.userName || submission.userEmail,
           winnerPhotoURL:
             submission.userPhotoURL || "https://i.ibb.co/4pB0Z4J/user.png",
         });
@@ -119,108 +136,125 @@ const SubmittedTasks = () => {
   }
 
   return (
-    <div className="p-8">
-      <h2 className="text-3xl font-bold mb-8 text-center">Submitted Tasks</h2>
+    <div className="card bg-base-100 shadow-xl">
+      <div className="card-body">
+        <h2 className="card-title text-3xl mb-6">Submitted Tasks</h2>
 
-      {submissions.length === 0 ? (
-        <div className="alert alert-info shadow-lg">
-          <span>No submissions yet. Waiting for participants!</span>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {submissions.map((submission) => {
-            const contest = contests.find(
-              (c) => c._id === submission.contestId
-            );
-            return (
-              <div key={submission._id} className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                  <h3 className="card-title text-lg">{contest?.name}</h3>
-                  <p className="text-sm text-base-content/70">
-                    Participant: {submission.userName || submission.userEmail}
-                  </p>
-                  <p className="text-sm">
-                    Submitted:{" "}
-                    {new Date(submission.submittedAt).toLocaleDateString()}
-                  </p>
+        {submissions.length === 0 ? (
+          <div className="alert alert-info shadow-lg">
+            <span>No submissions yet. Waiting for participants!</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Contest Name</th>
+                  <th>Participant</th>
+                  <th>Email</th>
+                  <th>Submitted Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {submissions.map((submission, index) => {
+                  const contest = contests.find(
+                    (c) => c._id === submission.contestId
+                  );
+                  return (
+                    <tr key={submission._id}>
+                      <th>{index + 1}</th>
+                      <td>{contest?.name || "Unknown"}</td>
+                      <td>{submission.userName || submission.userEmail}</td>
+                      <td>{submission.userEmail}</td>
+                      <td>
+                        {new Date(submission.submittedAt).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => setSelectedSubmission(submission)}
+                          className="btn btn-primary btn-sm"
+                        >
+                          View Submission
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-                  <div className="card-actions justify-end mt-4">
-                    <button
-                      onClick={() => setSelectedSubmission(submission)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      View Submission
-                    </button>
+        {/* Submission Detail Modal */}
+        {selectedSubmission && (
+          <dialog open className="modal modal-bottom sm:modal-middle">
+            <div className="modal-box">
+              <h3 className="font-bold text-2xl mb-4">Submission Details</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="font-semibold">Contest:</p>
+                  <p>
+                    {
+                      contests.find(
+                        (c) => c._id === selectedSubmission.contestId
+                      )?.name
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold">Participant:</p>
+                  <p>
+                    {selectedSubmission.userName ||
+                      selectedSubmission.userEmail}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold">Email:</p>
+                  <p>{selectedSubmission.userEmail}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Submitted Task:</p>
+                  <div className="bg-base-200 p-4 rounded-lg whitespace-pre-wrap">
+                    {selectedSubmission.task}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Submission Detail Modal */}
-      {selectedSubmission && (
-        <dialog open className="modal modal-bottom sm:modal-middle">
-          <div className="modal-box">
-            <h3 className="font-bold text-2xl mb-4">Submission Details</h3>
-            <div className="space-y-4">
-              <div>
-                <p className="font-semibold">Contest:</p>
-                <p>
-                  {
-                    contests.find((c) => c._id === selectedSubmission.contestId)
-                      ?.name
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold">Participant:</p>
-                <p>
-                  {selectedSubmission.userName || selectedSubmission.userEmail}
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold">Email:</p>
-                <p>{selectedSubmission.userEmail}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Submitted Task:</p>
-                <div className="bg-base-200 p-4 rounded-lg whitespace-pre-wrap">
-                  {selectedSubmission.task}
+                <div>
+                  <p className="font-semibold">Submitted At:</p>
+                  <p>
+                    {new Date(selectedSubmission.submittedAt).toLocaleString()}
+                  </p>
                 </div>
               </div>
-              <div>
-                <p className="font-semibold">Submitted At:</p>
-                <p>
-                  {new Date(selectedSubmission.submittedAt).toLocaleString()}
-                </p>
+
+              <div className="modal-action">
+                <button
+                  onClick={() => setSelectedSubmission(null)}
+                  className="btn btn-ghost"
+                >
+                  Close
+                </button>
+                {!contests.find((c) => c._id === selectedSubmission.contestId)
+                  ?.winner && (
+                  <button
+                    onClick={() => handleDeclareWinner(selectedSubmission)}
+                    className="btn btn-success"
+                    disabled={declareWinnerMutation.isLoading}
+                  >
+                    {declareWinnerMutation.isLoading
+                      ? "Declaring..."
+                      : "Declare Winner"}
+                  </button>
+                )}
               </div>
             </div>
-
-            <div className="modal-action">
-              <button
-                onClick={() => setSelectedSubmission(null)}
-                className="btn btn-ghost"
-              >
-                Close
-              </button>
-              {!contests.find((c) => c._id === selectedSubmission.contestId)
-                ?.winner && (
-                <button
-                  onClick={() => handleDeclareWinner(selectedSubmission)}
-                  className="btn btn-success"
-                >
-                  Declare Winner
-                </button>
-              )}
-            </div>
-          </div>
-          <form method="dialog" className="modal-backdrop">
-            <button onClick={() => setSelectedSubmission(null)}>close</button>
-          </form>
-        </dialog>
-      )}
+            <form method="dialog" className="modal-backdrop">
+              <button onClick={() => setSelectedSubmission(null)}>close</button>
+            </form>
+          </dialog>
+        )}
+      </div>
     </div>
   );
 };

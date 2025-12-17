@@ -51,12 +51,28 @@ const ContestDetails = () => {
     enabled: !!user?.uid,
   });
 
+  // Check submission status
+  const {
+    data: submissionStatus,
+    isLoading: submissionLoading,
+    refetch: refetchSubmission,
+  } = useQuery({
+    queryKey: ["submission", user?.uid, id],
+    queryFn: async () => {
+      if (!user?.uid) return false;
+      const res = await axiosSecure.get(`/check-submission/${user.uid}/${id}`);
+      return res.data.submitted;
+    },
+    enabled: !!user?.uid && paymentStatus === true,
+  });
+
   const userRole = userData?.role || "user";
   const isRegularUser = userRole === "user";
   const isEnded = contest?.deadline && new Date(contest.deadline) < new Date();
   const hasWinner = !!contest?.winner;
 
   const participantCount = contest?.participants || 0;
+  const hasSubmitted = submissionStatus === true;
 
   // Handle payment success
   useEffect(() => {
@@ -112,10 +128,14 @@ const ContestDetails = () => {
         submittedAt: new Date().toISOString(),
       });
 
-      Swal.fire("Success!", "Task submitted!", "success");
+      Swal.fire("Success!", "Task submitted successfully!", "success");
       setShowSubmitModal(false);
       setTaskSubmission("");
+
+      // Immediately update submission status without reload
+      refetchSubmission();
     } catch (error) {
+      console.error("Submit task error:", error);
       Swal.fire("Error", "Failed to submit task", "error");
     }
   };
@@ -156,7 +176,13 @@ const ContestDetails = () => {
     );
   };
 
-  if (contestLoading || authLoading || roleLoading || paymentLoading) {
+  if (
+    contestLoading ||
+    authLoading ||
+    roleLoading ||
+    paymentLoading ||
+    submissionLoading
+  ) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <span className="loading loading-spinner loading-lg"></span>
@@ -231,7 +257,6 @@ const ContestDetails = () => {
                 </h3>
                 <div className="avatar">
                   <div className="w-40 rounded-full ring ring-success ring-offset-base-100 ring-offset-4">
-                    {/* Now shows winner's photoURL from submission */}
                     <img
                       src={
                         contest.winner.photoURL ||
@@ -257,7 +282,7 @@ const ContestDetails = () => {
                 </div>
               )}
 
-              {/* Register & Pay - only for normal users, not ended, not paid, no winner */}
+              {/* Register & Pay */}
               {isRegularUser && !isEnded && !paymentStatus && !hasWinner && (
                 <button
                   onClick={handlePayment}
@@ -267,15 +292,33 @@ const ContestDetails = () => {
                 </button>
               )}
 
-              {/* Submit Task - only for normal users, not ended, paid, no winner */}
-              {isRegularUser && !isEnded && paymentStatus && !hasWinner && (
-                <button
-                  onClick={() => setShowSubmitModal(true)}
-                  className="btn btn-success btn-lg text-xl px-16"
-                >
-                  Submit Your Task
-                </button>
-              )}
+              {/* Submit Task - active */}
+              {isRegularUser &&
+                !isEnded &&
+                paymentStatus &&
+                !hasSubmitted &&
+                !hasWinner && (
+                  <button
+                    onClick={() => setShowSubmitModal(true)}
+                    className="btn btn-success btn-lg text-xl px-16"
+                  >
+                    Submit Your Task
+                  </button>
+                )}
+
+              {/* Task Submitted - disabled */}
+              {isRegularUser &&
+                !isEnded &&
+                paymentStatus &&
+                hasSubmitted &&
+                !hasWinner && (
+                  <button
+                    disabled
+                    className="btn btn-success btn-lg text-xl px-16 opacity-60 cursor-not-allowed"
+                  >
+                    Task Submitted ✓
+                  </button>
+                )}
 
               {/* Contest ended or winner declared */}
               {(isEnded || hasWinner) && (
