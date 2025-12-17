@@ -15,6 +15,7 @@ import MyContests from "../pages/Dashboard/CreatorDashboard/MyContests";
 import ContestDetails from "../pages/ContestDetails/ContestDetails";
 import SubmittedTasks from "../pages/Dashboard/CreatorDashboard/SubmittedTasks";
 import MyParticipated from "../pages/Dashboard/UserDashboard/MyParticipated";
+import MyWinningContests from "../pages/Dashboard/UserDashboard/MyWinningContests";
 
 export const router = createBrowserRouter([
   {
@@ -89,6 +90,10 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/participated",
         element: <MyParticipated></MyParticipated>,
+      },
+      {
+        path: "/dashboard/winnings",
+        element: <MyWinningContests></MyWinningContests>,
       },
     ],
   },

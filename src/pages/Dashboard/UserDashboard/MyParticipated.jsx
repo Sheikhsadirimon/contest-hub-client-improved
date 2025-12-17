@@ -1,4 +1,3 @@
-// src/pages/Dashboard/MyParticipated.jsx
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
@@ -17,7 +16,6 @@ const MyParticipated = () => {
     enabled: !!user?.uid,
   });
 
-  // Sort by upcoming deadline (closest first)
   const sortedContests = [...participatedContests].sort((a, b) => {
     return new Date(a.deadline) - new Date(b.deadline);
   });
