@@ -41,7 +41,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/leaderboard",
-        element: <Leaderboard></Leaderboard>,
+        element: (
+          <PrivateRoute>
+            <Leaderboard></Leaderboard>
+          </PrivateRoute>
+        ),
       },
       {
         path: "/how-it-works",

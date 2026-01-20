@@ -7,6 +7,9 @@ import WinnerAdvertisement from "../WinnerAdvertisement/WinnerAdvertisement";
 import CategoriesShowcase from "../../CategoriesShowcase/CategoriesShowcase";
 import StatsTrust from "../../shared/StatsTrust";
 import Testimonials from "../../Testimonials/Testimonials";
+import LeaderboardTeaser from "../../LeaderboardTeaser/LeaderboardTeaser";
+import FaqTeaser from "../../FaqTeaser/FaqTeaser";
+import HowItWorksTeaser from "../../HowItWorksTeaser/HowItWorksTeaser";
 
 const Home = () => {
   return (
@@ -16,7 +19,10 @@ const Home = () => {
       <WinnerAdvertisement></WinnerAdvertisement>
       <CategoriesShowcase></CategoriesShowcase>
       <StatsTrust></StatsTrust>
+      <LeaderboardTeaser></LeaderboardTeaser>
       <Testimonials></Testimonials>
+      <HowItWorksTeaser></HowItWorksTeaser>
+      <FaqTeaser></FaqTeaser>
       <Showcase></Showcase>
     </div>
   );
