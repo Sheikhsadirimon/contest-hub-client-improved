@@ -1,56 +1,25 @@
-<h1> Contest Hub </h1>
+Website name : ContestHub
 
-<h2>🚀 ContestHub – Online Contest Hosting Platform </h2> 
+Live site URL : https://classy-crisp-91eb92.netlify.app
 
-ContestHub is a web-based platform where creators can host contests and users can participate by paying an entry fee for a chance to win exciting prizes.
+======== Bullet points ========
 
-<h2>🔹 Project Overview </h2> 
+1.Change theme as u like
 
-Allows contest creators to create, manage, and host contests
+2.Search by category for your easy access
 
-Enables users to browse contests, pay an entry amount, and participate
+3.Popular contest sorted by participant count
 
-Designed to provide a secure and engaging contest experience
+4.Tabs in All Contest for easy access 
 
-<h2>🔧 Key Features </h2> 
+5.Leaderboard podium for top 3 user and rest in a table format 
 
-User authentication for creators and participants
+6.How it works page to know learn about creator , admin etc
 
-Contest creation and management dashboard
+7.FAQ Frequently asked questions can be answered easily
 
-Secure payment-based contest entry system
+8.Pagination added for admin dashboard manage users
 
-Responsive and user-friendly UI
+9.Admin cannot change other admin's role
 
-<h2>🛠 Technologies And Dependencies Used </h2> 
-
-React
-
-Node.js
-
-Tailwind CSS
-
-MongoDB
-
-Express
-
-Axios
-
-<h2>🚦 Running the Project </h2> 
-
-1. Clone the repository
-
-2. Install dependencies <b>npm install</b>
-
-3. Run development server: <b>npm run dev</b>
-
-4. Open localhost in your browser
-
-<h2>🖼️ Preview </h2> 
-
-<img  src="https://i.ibb.co.com/5gFrfHzn/69548d64e0ad035f13786fd8.jpg"  />
-
-<h2>🌟 Live Link </h2> 
-
-https://classy-crisp-91eb92.netlify.app
-
+10.Creator can only declare winner after the deadline.
