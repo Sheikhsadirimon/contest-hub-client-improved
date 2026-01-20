@@ -67,6 +67,12 @@ const Navbar = () => {
       <Link to="/faq">
         <li className="m-2">FAQ</li>
       </Link>
+      <Link to="/contact">
+        <li className="m-2">Contact Us</li>
+      </Link>
+      <Link to="/privacy">
+        <li className="m-2">Privacy</li>
+      </Link>
     </>
   );
 

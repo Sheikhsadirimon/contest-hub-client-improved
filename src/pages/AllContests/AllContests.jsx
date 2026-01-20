@@ -4,6 +4,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import useAxios from "../../hooks/useAxios";
 import Loading from "../../components/Loading/Loading";
+import { FiSearch } from "react-icons/fi";
 
 const AllContests = () => {
   const axiosInstance = useAxios();
@@ -14,6 +15,9 @@ const AllContests = () => {
   const [filteredContests, setFilteredContests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [sortOption, setSortOption] = useState("default");
 
   useEffect(() => {
     AOS.init({
@@ -26,7 +30,7 @@ const AllContests = () => {
       try {
         const response = await axiosInstance.get("/contests");
         const approvedContests = response.data.filter(
-          (contest) => contest.status === "approved"
+          (contest) => contest.status === "approved",
         );
         setContests(approvedContests);
         setFilteredContests(approvedContests);
@@ -45,22 +49,41 @@ const AllContests = () => {
     const urlCategory = params.get("category");
 
     if (urlCategory) {
-      const normalizedCategory = urlCategory.trim();
-      const matchedCategory = categories.find(
-        (cat) => cat.toLowerCase() === normalizedCategory.toLowerCase()
+      const normalized = urlCategory.trim();
+      const matched = categories.find(
+        (cat) => cat.toLowerCase() === normalized.toLowerCase(),
       );
 
-      if (matchedCategory) {
-        setActiveTab(matchedCategory);
-        setFilteredContests(
-          contests.filter((c) => c.category === matchedCategory)
-        );
+      if (matched) {
+        setActiveTab(matched);
+        setFilteredContests(contests.filter((c) => c.category === matched));
       } else {
         setActiveTab("All");
         setFilteredContests(contests);
       }
     }
   }, [location.search, contests]);
+
+  useEffect(() => {
+    let result = [...contests];
+
+    if (activeTab !== "All") {
+      result = result.filter((c) => c.category === activeTab);
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((c) => c.name.toLowerCase().includes(query));
+    }
+
+    if (sortOption === "price-low-high") {
+      result.sort((a, b) => a.prize - b.prize);
+    } else if (sortOption === "price-high-low") {
+      result.sort((a, b) => b.prize - a.prize);
+    }
+
+    setFilteredContests(result);
+  }, [contests, activeTab, searchQuery, sortOption]);
 
   const categories = ["All", ...new Set(contests.map((c) => c.category))];
 
@@ -86,44 +109,74 @@ const AllContests = () => {
 
   return (
     <section className="py-32 bg-base-200 min-h-screen">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Title */}
+        <div className="text-center mb-10 md:mb-12">
           <h2 className="text-4xl md:text-5xl font-black text-base-content mb-4">
             All Contests
           </h2>
-          <p className="text-lg text-base-content/70">
+          <p className="text-lg md:text-xl text-base-content/70">
             Explore every active and approved contest
           </p>
         </div>
 
-        {/* category Tabs */}
-        <div className="flex justify-center mb-12">
-          <div className="tabs tabs-boxed bg-base-300 p-2 rounded-xl shadow-lg">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleTabChange(category)}
-                className={`tab tab-lg font-semibold transition-all ${
-                  activeTab === category
-                    ? "tab-active rounded-xl bg-primary text-primary-content"
-                    : "text-base-content rounded-xl hover:bg-base-200"
-                }`}
+        {/* Controls */}
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 mb-12">
+          {/* 1. Search bar */}
+          <div className="relative w-full max-w-xl mx-auto">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-base-content/50 text-xl pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by contest name..."
+              className="input input-bordered input-lg w-full pl-12 bg-base-100 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all shadow-sm"
+            />
+          </div>
+
+          {/* 2. Category Tabs (horizontal) */}
+          <div className="flex justify-center">
+            <div className="tabs tabs-boxed bg-base-300 p-2 rounded-xl shadow-lg whitespace-nowrap overflow-x-auto max-w-full scrollbar-hide">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => handleTabChange(category)}
+                  className={`tab tab-lg font-semibold transition-all ${
+                    activeTab === category
+                      ? "tab-active rounded-xl bg-primary text-primary-content"
+                      : "text-base-content rounded-xl hover:bg-base-200"
+                  }`}
+                >
+                  {category === "All" ? "All Contests" : category}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Sort by Price */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-xs">
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="select select-bordered select-lg w-full bg-base-100 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/30 shadow-sm"
               >
-                {category === "All" ? "All Contests" : category}
-              </button>
-            ))}
+                <option value="default">Sort by: Default</option>
+                <option value="price-low-high">Prize: Low to High</option>
+                <option value="price-high-low">Prize: High to Low</option>
+              </select>
+            </div>
           </div>
         </div>
-
-        {/* Contests grid */}
+        {/* Contests Grid */}
         {filteredContests.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-xl text-base-content/60">
-              No contests found in this category.
+              No contests found matching your criteria.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
             {filteredContests.map((contest, index) => (
               <div
                 key={contest._id}
@@ -150,7 +203,7 @@ const AllContests = () => {
                     <div className="badge badge-success badge-lg">active</div>
                   </div>
 
-                  <h3 className="card-title text-lg font-bold text-base-content">
+                  <h3 className="card-title text-lg font-bold text-base-content line-clamp-2">
                     {contest.name}
                   </h3>
 

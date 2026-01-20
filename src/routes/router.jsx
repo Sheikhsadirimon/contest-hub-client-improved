@@ -20,6 +20,8 @@ import MyProfile from "../pages/Dashboard/UserDashboard/MyProfile";
 import Leaderboard from "../pages/Leaderboard/Leaderboard";
 import FAQ from "../pages/FAQ/FAQ";
 import HowItWorks from "../pages/HowItWorks/HowItWorks";
+import Contact from "../pages/Contact/Contact";
+import PrivacyTerms from "../pages/PrivacyTerms/PrivacyTerms";
 
 export const router = createBrowserRouter([
   {
@@ -56,12 +58,16 @@ export const router = createBrowserRouter([
         element: <FAQ></FAQ>,
       },
       {
+        path: "/contact",
+        element: <Contact></Contact>,
+      },
+      {
+        path: "/privacy",
+        element: <PrivacyTerms></PrivacyTerms>,
+      },
+      {
         path: "contest/:id",
-        element: (
-          <PrivateRoute>
-            <ContestDetails></ContestDetails>
-          </PrivateRoute>
-        ),
+        element: <ContestDetails></ContestDetails>,
         errorElement: <ErrorPage></ErrorPage>,
       },
       {

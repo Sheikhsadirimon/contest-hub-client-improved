@@ -60,7 +60,7 @@ const ContestDetails = () => {
     queryFn: async () => {
       if (!authUser?.uid) return false;
       const res = await axiosSecure.get(
-        `/check-submission/${authUser.uid}/${id}`
+        `/check-submission/${authUser.uid}/${id}`,
       );
       return res.data.submitted;
     },
@@ -189,7 +189,7 @@ const ContestDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-200 py-12 px-4">
+    <div className="min-h-screen bg-base-200 py-32 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="card bg-base-100 shadow-2xl overflow-hidden">
           {/* Banner */}

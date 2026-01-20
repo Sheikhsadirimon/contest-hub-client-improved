@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -24,6 +24,7 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue, // ← Added setValue for demo fill
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
@@ -54,6 +55,18 @@ const Login = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+
+  const handleDemoLogin = () => {
+    const demoEmail = "demo@contesthub.com";
+    const demoPassword = "Demouser007";
+
+    setValue("email", demoEmail);
+    setValue("password", demoPassword);
+
+   
+    handleSubmit(onSubmit)();
   };
 
   return (
@@ -120,6 +133,16 @@ const Login = () => {
             className="btn btn-neutral mt-6"
           >
             {isSubmitting ? "Logging in..." : "Login"}
+          </button>
+
+          {/* Demo Login Button */}
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={isSubmitting}
+            className="btn btn-outline btn-primary mt-4"
+          >
+            {isSubmitting ? "Logging in..." : "Demo Login"}
           </button>
 
           <div className="divider my-6">OR</div>

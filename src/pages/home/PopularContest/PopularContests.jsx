@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import useAxios from "../../../hooks/useAxios";
-import Loading from "../../../components/Loading/Loading";
 
 const PopularContests = () => {
   const axiosInstance = useAxios();
@@ -21,11 +20,9 @@ const PopularContests = () => {
     const fetchContests = async () => {
       try {
         const response = await axiosInstance.get("/contests");
-        
-        const approvedContests = response.data.filter(
-          (contest) => contest.status === "approved"
-        )
-        .slice(0, 6);;
+        const approvedContests = response.data
+          .filter((contest) => contest.status === "approved")
+          .slice(0, 6);
         setContests(approvedContests);
       } catch (error) {
         console.error("Error fetching contests:", error);
@@ -41,9 +38,35 @@ const PopularContests = () => {
     navigate(`/contest/${id}`);
   };
 
-  if (loading) {
-    return <Loading />;
-  }
+  const SkeletonCard = () => (
+    <div className="card bg-base-100 shadow-xl overflow-hidden animate-pulse">
+      <figure className="relative overflow-hidden">
+        <div className="w-full h-48 bg-base-300"></div>
+        <div className="absolute top-4 right-4 badge badge-primary font-bold text-lg py-3 px-4 w-20 h-10 bg-base-300"></div>
+      </figure>
+
+      <div className="card-body p-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="badge badge-outline badge-lg font-medium w-24 h-6 bg-base-300"></div>
+          <div className="badge badge-success badge-lg w-16 h-6 bg-base-300"></div>
+        </div>
+
+        <h3 className="card-title text-lg font-bold h-6 bg-base-300 rounded w-3/4"></h3>
+
+        <div className="mt-2 space-y-2">
+          <div className="h-4 bg-base-300 rounded w-full"></div>
+          <div className="h-4 bg-base-300 rounded w-5/6"></div>
+          <div className="h-4 bg-base-300 rounded w-4/6"></div>
+        </div>
+
+        <div className="mt-4 flex items-center text-sm h-5 bg-base-300 rounded w-32"></div>
+
+        <div className="card-actions mt-6">
+          <div className="btn w-full rounded-full h-12 bg-base-300"></div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <section className="py-16 bg-base-200">
@@ -57,7 +80,13 @@ const PopularContests = () => {
           </p>
         </div>
 
-        {contests.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
+          </div>
+        ) : contests.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-xl text-base-content/60">
               No approved contests available at the moment.
@@ -102,7 +131,11 @@ const PopularContests = () => {
                   </p>
 
                   <div className="mt-4 flex items-center text-sm text-base-content/60">
-                    <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-5 h-5 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
                     </svg>
                     {contest.participants?.toLocaleString() || 0} participants
