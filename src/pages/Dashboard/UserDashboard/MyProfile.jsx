@@ -102,11 +102,11 @@ const MyProfile = () => {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Avatar & Stats */}
+        {/* Avatar and Stats */}
         <div className="space-y-8">
           <div className="card bg-gradient-to-br from-indigo-50 to-purple-100 shadow-2xl p-10 text-center">
             <div className="avatar mb-6">
-              <div className="w-40 rounded-full ring ring-primary ring-offset-base-100 ring-offset-4">
+              <div className="w-40 rounded-full ring ring-primary mx-auto ring-offset-base-100 ring-offset-4">
                 <img
                   src={
                     photoURL ||
@@ -127,7 +127,7 @@ const MyProfile = () => {
           </div>
 
           {/* win chart */}
-          <div className="card bg-base-100 shadow-2xl p-8">
+          <div className="card bg-base-100 shadow-2xl md:p-8 py-8">
             <h3 className="text-2xl font-bold text-center mb-6">
               Win Statistics
             </h3>

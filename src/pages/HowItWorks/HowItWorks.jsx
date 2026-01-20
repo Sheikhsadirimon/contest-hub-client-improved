@@ -42,7 +42,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-16 bg-base-200 min-h-screen">
+    <section className="py-32 bg-base-200 min-h-screen">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">

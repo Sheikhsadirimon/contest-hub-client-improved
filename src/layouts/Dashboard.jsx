@@ -102,12 +102,12 @@ const Dashboard = () => {
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
 
       <div className="drawer-content flex flex-col">
-        <div className="navbar bg-base-100 shadow-md px-6">
+        <div className="navbar bg-base-100 shadow-md md:px-6">
           <div className="flex-1">
             <div className="flex items-center gap-4">
               <label
                 htmlFor="dashboard-drawer"
-                className="btn btn-ghost drawer-button lg:hidden"
+                className="btn px-2 btn-ghost drawer-button lg:hidden"
               >
                 <svg
                   className="w-6 h-6"

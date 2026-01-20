@@ -55,7 +55,7 @@ const Banner = () => {
   };
 
   return (
-    <section className="relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] via-[#7d41ad] to-[#1a1a1a] overflow-hidden">
+    <section className="relative min-h-[700px] flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] via-[#7d41ad] to-[#1a1a1a] overflow-hidden">
       <div className="absolute inset-0 bg-black/30"></div>
 
       <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">

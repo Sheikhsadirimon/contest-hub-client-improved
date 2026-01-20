@@ -4,6 +4,7 @@ import Banner from "../Banner/Banner";
 import Showcase from "../ShowCase/ShowCase";
 import PopularContests from "../PopularContest/PopularContests";
 import WinnerAdvertisement from "../WinnerAdvertisement/WinnerAdvertisement";
+import CategoriesShowcase from "../../CategoriesShowcase/CategoriesShowcase";
 
 const Home = () => {
   return (
@@ -11,6 +12,7 @@ const Home = () => {
       <Banner></Banner>
       <PopularContests></PopularContests>
       <WinnerAdvertisement></WinnerAdvertisement>
+      <CategoriesShowcase></CategoriesShowcase>
       <Showcase></Showcase>
     </div>
   );

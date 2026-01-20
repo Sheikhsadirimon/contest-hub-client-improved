@@ -22,7 +22,7 @@ const Leaderboard = () => {
   const rest = leaderboard.slice(3);
 
   return (
-    <section className="py-16 bg-gradient-to-b from-base-200 to-base-300 min-h-screen">
+    <section className="py-32 bg-gradient-to-b from-base-200 to-base-300 min-h-screen">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">

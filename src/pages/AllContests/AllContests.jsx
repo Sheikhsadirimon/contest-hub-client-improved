@@ -85,7 +85,7 @@ const AllContests = () => {
   }
 
   return (
-    <section className="py-16 bg-base-200 min-h-screen">
+    <section className="py-32 bg-base-200 min-h-screen">
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-black text-base-content mb-4">
